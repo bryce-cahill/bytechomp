@@ -144,9 +144,18 @@ def flatten_dataclass(data_object: type) -> tuple[str, list[int | float | bytes]
 
             else:
                 raise TypeError(f"unsupported annotated type: {arg_type} (field: {field.name})")
-        elif field.type in [list, bytes]:
+        elif field.type in [bytes]:
+            # Handle non-annotated bytes type
+            # @TODO: Abstract bytes and lists nicely to remove annotation req
+            if not isinstance(val, bytes):
+                raise TypeError(
+                    f"{field.name} field contains {val_t} type but requires {field.type}")
+
+            pattern += f"{len(val)}s"
+            values.append(val)
+        elif field.type in [list]:
             raise TypeError(
-                f"annotation needed for list/bytes (length required, field: {field.name})"
+                f"annotation needed for list (length required, field: {field.name})"
             )
         else:
             raise TypeError(f"unsupported data type ({field.type}) on field {field.name}")
